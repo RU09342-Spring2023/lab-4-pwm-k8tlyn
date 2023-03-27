@@ -1,8 +1,10 @@
-# Hardware PWM
-Now that you have done the software version of PWM, now it is time to start leveraging the other features of these Timer Modules to control several pins without needing your processor to do so.
+# Hardware PWM - Part 2
 
-## Task
-You will need to use pins 6.0, 6.1, and 6.2 to drive an RGB LED. These will need to be configured with a PWM Period of 1ms. You need your RGB LED to cycle between the following colors in order:
+
+Timer 3 is set to SMCLK in up mode. It counts up to CCR0 = 1000. P6.0 connects to the red LED w/ duty cycle in CCR1, P6.1 connects to the green LED w/ duty cycle in CCR2, and P6.2 connects to the blue LED w/ duty cycle in CCR3. 
+
+In order to cycle through:
+
 - Red
 - Orange (Red + Green)
 - Green
@@ -10,10 +12,4 @@ You will need to use pins 6.0, 6.1, and 6.2 to drive an RGB LED. These will need
 - Blue
 - Purple (Red + Blue)
 
-You need to cover colors in between them, meaning as you transition from Red to Orange, it shouldn't be just 2 colors. The amount of colors are up to you, but is needs to appear smooth in transition. The timing for cycling is up to you to determine as well.
-
-## Deliverables
-You will need to upload the .c file and a README explaining your code and any design decisions made.
-
-### Hints
-You will need to use the CCR registers in order to accomplish this. You may also want to use a second TIMER module to determine how fast your LED colors cycle.
+Initially, red is on while green and blue are off, then green increases and red increases (eventually orange is formed) until only green is on. Then green begins to decrease and blue begins to increase (forming cyan during the process) until only blue is on. Finally, blue is decreased while red is increased (purple is in there somewhere) until only red is on and process repeats.

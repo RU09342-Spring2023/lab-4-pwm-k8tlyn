@@ -43,44 +43,70 @@ int main(void)
 }
 
 void pinSetup(){
-    P6OUT &= ~BIT0;         //set pins for RGB output
-    P6DIR |= BIT0;          //P6.0 uses TB3.1
+    P6OUT &= ~BIT0;                       //set pins for RGB output
     P6OUT &= ~BIT1;
-    P6DIR |= BIT1;          //P6.1 uses TB3.2
     P6OUT &= ~BIT2;
-    P6DIR |= BIT2;          //P6.2 uses TB3.3
+    P6DIR |= BIT0 + BIT1 + BIT2;          //P6.0, P6.1, and P6.2 uses TB3.1
+
 }
 void TimerB3Setup(){
         // Configure Timer_B3
             TB3CTL = TBSSEL_2 | MC__UP | TBCLR | TBIE;      // SMCLK, up mode, clear
+        //Output Mode
             TB3CCTL1 = OUTMOD_7;                          // period reset/set
-        //TBR, enable interrupt
-            TB0CCTL1 |= CCIE;                             // Enable TB3CCR1 Interrupt
+            TB3CCTL2 = OUTMOD_7;                          // period reset/set
+            TB3CCTL3 = OUTMOD_7;                          // period reset/set
+        //enable interrupt
+            TB3CCTL1 |= CCIE;                             // Enable TB3CCR1 Interrupt
+            TB3CCTL2 |= CCIE;                             // Enable TB3CCR1 Interrupt
+            TB3CCTL3 |= CCIE;                             // Enable TB3CCR1 Interrupt
+        //TBxCCR values set
             TB3CCR0 = 1000;                               //1kHz frequency
-            TB3CCR1 = 500;                                //50% duty cycle
+            TB3CCR1 = 500;                                //50% duty cycle for RED
+            TB3CCR2 = 0;                                //0% duty cycle for GREEN
+            TB3CCR3 = 0;                                //0% duty cycle for BLUE
 
 }
-void changeColor(){
 
-}
-
-// Timer0 B0 interrupt service routine
-#pragma vector = TIMER3_B0_VECTOR
-__interrupt void Timer3_B0_ISR(void)
+// Timer3 B1 interrupt service routine
+#pragma vector = TIMER3_B1_VECTOR
+__interrupt void Timer3_B1_ISR(void)
 {
-    switch(__even_in_range(TB0IV,TB0IV_TBIFG))
+    switch(__even_in_range(TB3IV, TB3IV_TBIFG))
       {
         case  0:                              //no interrupt pending
             break;
-        case  TB0IV_TBCCR1:                   // CCR1
-
+        case  TB3IV_TBCCR1:                   // CCR1
+            P6OUT &= ~BIT0;                   //set P6.0 to 0
             break;
-        case  TB0IV_TBIFG:                    // TBIFG
-            changeColor();                   //change color of light
+        case  TB3IV_TBCCR2:                   // CCR2
+            P6OUT &= ~BIT1;                   //set P6.1 to 0
+            break;
+        case  TB3IV_TBCCR3:                   // CCR3
+            P6OUT &= ~BIT2;                   //set P6.2 to 0
+            break;
+        case  TB3IV_TBIFG:                    // TBIFG
+
+            P6OUT |= BIT0 + BIT1 + BIT2;      //set pins to output
+
+           if ((TB3CCR1 > 1) && (TB3CCR2 < 499)){ //should start as red and then become orange and then become green
+               TB3CCR2++;           //more green
+               TB3CCR1--;           //less red
+           }
+           else if((TB3CCR2 > 1) && (TB3CCR3 < 499)){ //should start as green and then become cyan and then become blue
+               TB3CCR3++;           //more blue
+               TB3CCR2--;           //less green
+           }
+           else if((TB3CCR3 > 1) && (TB3CCR1 < 499)){ //should start as blue and then become purple and then become red
+               TB3CCR1++;           //more red
+               TB3CCR3--;           //less blue
+           }
+
             break;
         default:
             break;
       }
 }
+
 
 
