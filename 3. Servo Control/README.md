@@ -1,12 +1,13 @@
-# Servo Control
-Servos can be controlled with PWM, determining which angle should be taken by how wide the duty cycle is. You will need to build a manual control for a servo using the two buttons on the development board.
+# Explanation
 
-## Task
-You can chose whichever pin you want to control your Servo (but I might recommend one with hardware PWM control). Your will use the two buttons on your development board to control the position of your servo. The button on the left side of the board should turn the servo counterclockwise, the button on the right side of the board should turn it clockwise.
+I am using SMCLK in upmode.
 
-The servo will have a limit to the amount of degree it can rotate, so make sure you take a look at that before coding.
+Every time P2.3 is pressed the servo should move 18° degrees left, and when P4.1 is pressed it should move 18° degrees right.  I figured these numbers out from the datasheet for a 9 g micro-servo. The datasheet said that the PWM should have a period of 50Hz or 20ms. It also said that:
+ *1ms duty cycle will make servo rotate -90°    
+ *1.5ms duty cycle will make servo rotate 0°
+ *2ms duty cycle will make servo rotate 90°
 
-The servo will need to be most likely powered from the power supply on the bench. If you do this, you need to make sure you connect common ground between the supply and your board. Otherwise, your system will not work or you risk damaging your board.
+Based on these numbers I calculated (in top comment of main) that TB3CCR0 should be 20000 in order to have 20 ms period and TB3CCR1 will range from 1000-2000 in order to make it turn.
 
-## Deliverables
-You will need to upload the .c file and a README explaining your code and any design decisions made.
+When P2.3 is pressed, as long as CCR1 > 1000 the servo will move left 18° (CCR1 -=100)
+When P4.1 is pressed, as long as CCR1 < 2000 the servo will move right 18° (CCR1 +=100)

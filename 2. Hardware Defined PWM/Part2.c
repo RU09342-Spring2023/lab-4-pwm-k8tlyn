@@ -25,7 +25,7 @@ The timing for cycling is up to you to determine as well.
 #include <msp430.h> 
 
 void pinSetup();
-void TimerB0Setup();
+void TimeB3Setup();
 void changeColor();
 
 int main(void)
@@ -37,7 +37,7 @@ int main(void)
         PM5CTL0 &= ~LOCKLPM5;
 
         pinSetup();
-        TimerB3Setup(); // Initialize Timer0
+        TimeB3Setup(); // Initialize Timer0
         __bis_SR_register(LPM0_bits + GIE);       // Enter LPM0 w/ interrupt
 
 }
@@ -49,7 +49,7 @@ void pinSetup(){
     P6DIR |= BIT0 + BIT1 + BIT2;          //P6.0, P6.1, and P6.2 uses TB3.1
 
 }
-void TimerB3Setup(){
+void TimeB3Setup(){
         // Configure Timer_B3
             TB3CTL = TBSSEL_2 | MC__UP | TBCLR | TBIE;      // SMCLK, up mode, clear
         //Output Mode
@@ -89,16 +89,16 @@ __interrupt void Timer3_B1_ISR(void)
 
             P6OUT |= BIT0 + BIT1 + BIT2;      //set pins to output
 
-           if ((TB3CCR1 > 1) && (TB3CCR2 < 499)){ //should start as red and then become orange and then become green
-               TB3CCR2++;           //more green
+           if ((TB3CCR1 > 1) && (TB3CCR3 < 2) && (TB3CCR2 < 499)){  //as long as there is some red, no blue, and green isn't all the way on
+               TB3CCR2++;           //more green                    //should start as red and then become orange and then become green
                TB3CCR1--;           //less red
            }
-           else if((TB3CCR2 > 1) && (TB3CCR3 < 499)){ //should start as green and then become cyan and then become blue
-               TB3CCR3++;           //more blue
+           else if((TB3CCR2 > 1) && (TB3CCR1 < 2) && (TB3CCR3 < 499)){ //as long as there is some green, no red, and blue isn't all the way on
+               TB3CCR3++;           //more blue                     //should start as green and then become cyan and then become blue
                TB3CCR2--;           //less green
            }
-           else if((TB3CCR3 > 1) && (TB3CCR1 < 499)){ //should start as blue and then become purple and then become red
-               TB3CCR1++;           //more red
+           else if((TB3CCR3 > 1) && (TB3CCR2 < 2) && (TB3CCR1 < 499)){ //as long as there is some blue, no green, and red isn't all the way on
+               TB3CCR1++;           //more red                      //should start as blue and then become purple and then become red
                TB3CCR3--;           //less blue
            }
 
